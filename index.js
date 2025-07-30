@@ -19,6 +19,9 @@ import vehicleLocationHistoryRouter from './src/routes/vehicleLocationHistoryRou
 import vehiclesRouter from './src/routes/vehiclesRoutes.js';
 import vehicleStatusRouter from './src/routes/vehicleStatusRoutes.js';
 import authRouter from './src/routes/authRouter.js'
+import snippetRoutes from './src/routes/snippet.js';
+
+
 
 dotenv.config()
 
@@ -44,6 +47,7 @@ app.use("/api",vehicleCategoriesRouter);
 app.use("/api",vehicleLocationHistoryRouter);
 app.use("/api",vehiclesRouter);
 app.use("/api",vehicleStatusRouter);
+app.use('/api/snippet', snippetRoutes);
 
 // Basic route for the root URL
 app.get('/', (req, res) => {

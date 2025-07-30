@@ -1,28 +1,36 @@
 import express from 'express';
 const router = express.Router();
-import db from '../models/index.js'; // Adjust if your path is different
 
-router.post('/bookings', async (req, res) => {
-  try {
-    const { uid, name, phone, vehicle, dates } = req.body;
+// Serve the snippet JS by ID
+router.get('/:snippetId.js', async (req, res) => {
+  const { snippetId } = req.params;
 
-    const client = await db.clients.findOne({ where: { snippetCode: uid } });
-    if (!client) return res.status(400).json({ error: "Invalid snippet UID" });
+  // Validate snippetId from DB
+  const tenant = await db.Tenants.findOne({ where: { snippetId } });
+  if (!tenant) return res.status(404).send('Invalid snippet ID');
 
-    await db.bookings.create({
-      clientId: client.id,
-      name,
-      phone,
-      vehicle,
-      dates,
-      source: "snippet",
-    });
+  res.setHeader('Content-Type', 'application/javascript');
 
-    res.status(200).json({ message: "Booking received" });
-  } catch (err) {
-    console.error("Snippet booking error:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
+  const js = `
+    (function(){
+      function sendBookingData(data) {
+        fetch('https://api.framtt.com/api/bookings/from-snippet', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            snippetId: "${snippetId}",
+            ...data
+          })
+        });
+      }
+
+      window.submitFramttBooking = function(data) {
+        sendBookingData(data);
+      };
+    })();
+  `;
+
+  res.send(js);
 });
 
 export default router;
